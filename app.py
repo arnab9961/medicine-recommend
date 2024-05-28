@@ -9,6 +9,8 @@ st.set_page_config(
 )
 
 # Define background image CSS
+
+
 page_bg_img = """
 <style>
 [data-testid="stAppViewContainer"]{
@@ -20,7 +22,7 @@ background-size: cover;
 st.markdown(page_bg_img, unsafe_allow_html=True)
 
 # Load the similarity pickle file
-with open('similarity.pkl', 'rb') as file:  # Ensure you are loading the reduced file
+with open('similarity.pkl', 'rb') as file:
     similarity = pickle.load(file)
 
 # Load your dataset
@@ -34,9 +36,6 @@ def translate_to_bangla(text):
 
 # Define your recommendation function
 def recommend(medicine):
-    # Ensure the medicine exists in the reduced dataset
-    if medicine not in new_df['Drug_Name'].values:
-        return []
     medicine_index = new_df[new_df['Drug_Name'] == medicine].index[0]
     distances = similarity[medicine_index]
     medicines_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:6]
@@ -57,23 +56,20 @@ selected_medicine = st.selectbox('একটি ঔষধ নির্বাচ�
 if st.button('প্রস্তাবনা করুন'):
     recommended_medicines = recommend(selected_medicine)
 
-    if recommended_medicines:
-        # Create a DataFrame to hold medicine names and descriptions
-        recommended_df = pd.DataFrame(columns=['ঔষধের নাম', 'বর্ণনা'])
+    # Create a DataFrame to hold medicine names and descriptions
+    recommended_df = pd.DataFrame(columns=['ঔষধের নাম', 'বর্ণনা'])
 
-        # Populate the DataFrame
-        for med in recommended_medicines:
-            bengali_name = translate_to_bangla(med)  # Translate to Bangla using the function
+    # Populate the DataFrame
+    for med in recommended_medicines:
+        bengali_name = translate_to_bangla(med)  # Translate to Bangla using the function
 
-            # Get the description for the medicine
-            description = new_df[new_df['Drug_Name'] == med]['Description'].values[0]
-            bengali_description = translate_to_bangla(description)
+        # Get the description for the medicine
+        description = new_df[new_df['Drug_Name'] == med]['Description'].values[0]
+        bengali_description = translate_to_bangla(description)
 
-            recommended_df = recommended_df.append({'ঔষধের নাম': bengali_name, 'বর্ণনা': bengali_description},
-                                                   ignore_index=True)
+        recommended_df = recommended_df.append({'ঔষধের নাম': bengali_name, 'বর্ণনা': bengali_description},
+                                               ignore_index=True)
 
-        # Display the DataFrame as a table
-        st.write('**শীর্ষ 5 প্রস্তাবিত ঔষধ:**')
-        st.table(recommended_df)
-    else:
-        st.write('প্রস্তাবিত কোন ঔষধ পাওয়া যায়নি।')
+    # Display the DataFrame as a table
+    st.write('**শীর্ষ 5 প্রস্তাবিত ঔষধ:**')
+    st.table(recommended_df)
